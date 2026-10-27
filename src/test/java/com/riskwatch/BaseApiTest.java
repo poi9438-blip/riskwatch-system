@@ -4,8 +4,11 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.slf4j.MDC;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.availability.AvailabilityChangeEvent;
+import org.springframework.boot.availability.ReadinessState;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.context.ApplicationContext;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
@@ -29,6 +32,9 @@ class BaseApiTest {
     @Autowired
     private MockMvc mockMvc;
 
+    @Autowired
+    private ApplicationContext context;
+
     @Test
     @DisplayName("[TC-BASE-101] health는 로그인 없이 200, X-Trace-Id 헤더가 없으면 rw-UUID를 만들어 응답 헤더에 넣음")
     void healthIsPublicAndGetsTraceId() throws Exception {
@@ -38,6 +44,23 @@ class BaseApiTest {
                 // 세부 정보(DB 등 구성 요소)는 숨김
                 .andExpect(jsonPath("$.components").doesNotExist())
                 .andExpect(header().string("X-Trace-Id", matchesPattern(FF_TRACE)));
+    }
+
+    @Test
+    @DisplayName("[TC-BASE-108] 준비 상태가 요청 받지 않음이면 health 503, 다시 받음이면 200 UP (시작 준비가 끝나기 전에는 healthy 아님)")
+    void healthFollowsReadiness() throws Exception {
+        try {
+            AvailabilityChangeEvent.publish(context, ReadinessState.REFUSING_TRAFFIC);
+            mockMvc.perform(get("/actuator/health"))
+                    .andExpect(status().isServiceUnavailable())
+                    .andExpect(jsonPath("$.status").value("OUT_OF_SERVICE"));
+        } finally {
+            // 같은 컨텍스트를 쓰는 다른 테스트를 위해 되돌림
+            AvailabilityChangeEvent.publish(context, ReadinessState.ACCEPTING_TRAFFIC);
+        }
+        mockMvc.perform(get("/actuator/health"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.status").value("UP"));
     }
 
     @Test

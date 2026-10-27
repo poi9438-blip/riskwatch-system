@@ -28,3 +28,6 @@ app:
     finflow-secret: RiskWatch-Test-FinFlow-Service-Secret-32bytes
   encryption:
     key: RiskWatch-AES-256-Key-Test-Pad!!
+  # 시작 준비는 끔 (켠 상태는 StartupWarmUpTest에서 확인)
+  warm-up:
+    enabled: false

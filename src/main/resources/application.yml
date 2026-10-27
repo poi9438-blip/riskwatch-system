@@ -31,6 +31,10 @@ spring:
       # 테이블은 Flyway(db/migration)가 만들고 바꿈, Hibernate는 엔티티와 테이블이 맞는지 확인만
       ddl-auto: validate
     show-sql: false
+  mvc:
+    servlet:
+      # 요청 처리기(DispatcherServlet)를 첫 요청 때가 아니라 시작할 때 준비 (#2)
+      load-on-startup: 1
 
 server:
   # RiskWatch 포트 8120 (HomeFin 8100, RiskWatch 8120)
@@ -52,6 +56,9 @@ app:
   encryption:
     # 평가 입력의 연소득·DTI 암호화 키 (정확히 32바이트, 기본값 없음)
     key: ${ENCRYPTION_KEY}
+  warm-up:
+    # 시작할 때 평가 경로를 한 번 미리 실행 (저장은 롤백, 띄운 직후 첫 평가가 느린 문제 #2)
+    enabled: ${WARM_UP_ENABLED:true}
 
 management:
   endpoints:
@@ -63,6 +70,9 @@ management:
     health:
       # 상태 세부 정보 숨김
       show-details: never
+      # 준비 상태(readiness)를 health에 포함: 시작 준비가 끝나기 전에는 503 (#2)
+      probes:
+        enabled: true
 
 logging:
   level:
