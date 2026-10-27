@@ -36,6 +36,8 @@ services:
       DB_URL: jdbc:mysql://mysql:3306/${MYSQL_DATABASE:-riskwatch}?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
       MYSQL_USER: ${MYSQL_USER:-rwuser}
       MYSQL_PASSWORD: ${MYSQL_PASSWORD:?MYSQL_PASSWORD를 .env에 설정하세요}
+      # 평가 입력 암호화 키 (.env 필수, 기본값 없음)
+      ENCRYPTION_KEY: ${ENCRYPTION_KEY:?ENCRYPTION_KEY를 .env에 설정하세요}
     depends_on:
       mysql:
         condition: service_healthy
