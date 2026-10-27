@@ -19,6 +19,11 @@ spring:
     hikari:
       connection-timeout: 10000
 
+  jackson:
+    deserialization:
+      # 정수 칸(금액·기간·자녀 수)에 소수가 오면 버리지 않고 거부 (1.5 → 1로 판정하지 않게)
+      accept-float-as-int: false
+
   jpa:
     # 요청 끝까지 DB 커넥션을 잡지 않도록 OSIV 끔 (HomeFin #71에서 확인한 문제)
     open-in-view: false
@@ -40,6 +45,10 @@ app:
     # 첫 운영자 계정 (서버 시작 때 없으면 만듦, 비우면 만들지 않음)
     initial-email: ${OPERATOR_EMAIL:}
     initial-password: ${OPERATOR_PASSWORD:}
+  service-token:
+    # 평가를 요청하는 서버별 서비스 토큰 서명 키 (각 서버와 RiskWatch만 앎, 32바이트 이상, 서로 다른 값, 기본값 없음)
+    homefin-secret: ${HOMEFIN_TOKEN_SECRET}
+    finflow-secret: ${FINFLOW_TOKEN_SECRET}
   encryption:
     # 평가 입력의 연소득·DTI 암호화 키 (정확히 32바이트, 기본값 없음)
     key: ${ENCRYPTION_KEY}

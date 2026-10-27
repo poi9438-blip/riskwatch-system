@@ -8,8 +8,8 @@
 | [base.md](base.md)             | 뼈대: 보안 기본값, traceId, actuator, 시각 | TC-BASE   |
 | [api-errors.md](api-errors.md) | 공통 응답·오류 형식                        | TC-ERR    |
 | [rules.md](rules.md)           | 심사 규칙 엔진 (판정·근거)                 | TC-RULE   |
-| [evaluation.md](evaluation.md) | 기준표 버전 선택, 평가 기록                | TC-EVAL   |
-| [auth.md](auth.md)             | 운영자 로그인·토큰 (서비스 토큰은 4단계)   | TC-AUTH   |
+| [evaluation.md](evaluation.md) | 평가 API, 기준표 버전 선택, 평가 기록      | TC-EVAL   |
+| [auth.md](auth.md)             | 운영자 로그인·토큰, 서비스 토큰·역할       | TC-AUTH   |
 | [criteria.md](criteria.md)     | 심사 기준 변경·조회, 평가 기록 목록        | TC-CRIT   |
 
 ## ID 규칙

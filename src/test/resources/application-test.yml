@@ -23,5 +23,8 @@ app:
     token-expiration-ms: 3600000
     initial-email: operator@test.local
     initial-password: Operator-Test-Pass!1
+  service-token:
+    homefin-secret: RiskWatch-Test-HomeFin-Service-Secret-32bytes
+    finflow-secret: RiskWatch-Test-FinFlow-Service-Secret-32bytes
   encryption:
     key: RiskWatch-AES-256-Key-Test-Pad!!

@@ -39,6 +39,9 @@ services:
       # 평가 입력 암호화 키 (.env 필수, 기본값 없음)
       ENCRYPTION_KEY: ${ENCRYPTION_KEY:?ENCRYPTION_KEY를 .env에 설정하세요}
       OPERATOR_JWT_SECRET: ${OPERATOR_JWT_SECRET:?OPERATOR_JWT_SECRET을 .env에 설정하세요}
+      # 평가를 요청하는 서버별 서비스 토큰 키 (.env 필수, 서로 다른 값)
+      HOMEFIN_TOKEN_SECRET: ${HOMEFIN_TOKEN_SECRET:?HOMEFIN_TOKEN_SECRET을 .env에 설정하세요}
+      FINFLOW_TOKEN_SECRET: ${FINFLOW_TOKEN_SECRET:?FINFLOW_TOKEN_SECRET을 .env에 설정하세요}
       # 첫 운영자 계정 (선택, 비우면 만들지 않음)
       OPERATOR_EMAIL: ${OPERATOR_EMAIL:-}
       OPERATOR_PASSWORD: ${OPERATOR_PASSWORD:-}

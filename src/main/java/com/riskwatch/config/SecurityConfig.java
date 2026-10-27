@@ -7,6 +7,7 @@ import com.riskwatch.repository.OperatorRepository;
 import com.riskwatch.security.AuthTokenFilter;
 import com.riskwatch.security.OperatorTokens;
 import com.riskwatch.security.Role;
+import com.riskwatch.security.ServiceTokens;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.context.annotation.Bean;
@@ -25,14 +26,15 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 
 import java.io.IOException;
 
-// 보안 설정: 세션 미사용, health만 공개, 401/403 JSON 응답(traceId 포함)
+// 보안 설정: 세션 미사용, health·로그인만 공개, 평가는 서비스·운영자 API는 ADMIN, 401/403 JSON 응답(traceId 포함)
 @Configuration
 @EnableWebSecurity
 public class SecurityConfig {
-        // 주소별 규칙: health만 공개, 나머지는 인증 필요
+        // 주소별 규칙: health·로그인만 공개, 나머지는 인증 필요
         @Bean
         public SecurityFilterChain securityFilterChain(HttpSecurity http, ObjectMapper objectMapper,
-                        OperatorTokens operatorTokens, OperatorRepository operatorRepository) throws Exception {
+                        ServiceTokens serviceTokens, OperatorTokens operatorTokens,
+                        OperatorRepository operatorRepository) throws Exception {
                 return http
                                 // 쿠키 인증이 없어 CSRF 확인 끔 (호출은 모두 Authorization 헤더)
                                 .csrf(AbstractHttpConfigurer::disable)
@@ -42,12 +44,17 @@ public class SecurityConfig {
                                                 .sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                                 .authorizeHttpRequests(auth -> auth
                                                 .requestMatchers("/actuator/health").permitAll()
-                                                // 운영자 로그인은 공개, 운영자 API는 ADMIN만 (평가 API의 서비스 토큰은 4단계)
+                                                // 운영자 로그인은 공개, 운영자 API는 ADMIN만
                                                 .requestMatchers(HttpMethod.POST, "/api/auth/login").permitAll()
                                                 .requestMatchers("/api/admin/**").hasRole(Role.ADMIN.name())
+                                                // 평가 요청은 서비스만, 평가 조회는 서비스(자기 평가만, 서비스에서 확인)·운영자
+                                                .requestMatchers(HttpMethod.POST, "/api/evaluations")
+                                                .hasRole(Role.SERVICE.name())
+                                                .requestMatchers(HttpMethod.GET, "/api/evaluations/*")
+                                                .hasAnyRole(Role.SERVICE.name(), Role.ADMIN.name())
                                                 .anyRequest().authenticated())
                                 // Bearer 토큰 확인 필터를 기본 로그인 필터 앞에 추가
-                                .addFilterBefore(new AuthTokenFilter(operatorTokens, operatorRepository),
+                                .addFilterBefore(new AuthTokenFilter(serviceTokens, operatorTokens, operatorRepository),
                                                 UsernamePasswordAuthenticationFilter.class)
                                 .exceptionHandling(ex -> ex
                                                 // 401: 누구인지 모름 = 인증 실패
