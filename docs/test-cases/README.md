@@ -3,14 +3,15 @@
 기능별로 "무엇을, 왜, 어떤 입력으로, 무엇을 기대하는지"를 적은 문서입니다. 기준은 [업무 명세](../spec.md)입니다.
 공통 기준은 [테스트 기준](../TESTING.md), 원본과 달라진 점과 결함 목록은 [알려진 문제](../known-issues.md)에 있습니다.
 
-| 파일                           | 영역                                       | ID 접두사 |
-| ------------------------------ | ------------------------------------------ | --------- |
-| [base.md](base.md)             | 뼈대: 보안 기본값, traceId, actuator, 시각 | TC-BASE   |
-| [api-errors.md](api-errors.md) | 공통 응답·오류 형식                        | TC-ERR    |
-| [rules.md](rules.md)           | 심사 규칙 엔진 (판정·근거)                 | TC-RULE   |
-| [evaluation.md](evaluation.md) | 평가 API, 기준표 버전 선택, 평가 기록      | TC-EVAL   |
-| [auth.md](auth.md)             | 운영자 로그인·토큰, 서비스 토큰·역할       | TC-AUTH   |
-| [criteria.md](criteria.md)     | 심사 기준 변경·조회, 평가 기록 목록        | TC-CRIT   |
+| 파일                                 | 영역                                                   | ID 접두사 |
+| ------------------------------------ | ------------------------------------------------------ | --------- |
+| [base.md](base.md)                   | 뼈대: 보안 기본값, traceId, actuator, 시각             | TC-BASE   |
+| [api-errors.md](api-errors.md)       | 공통 응답·오류 형식                                    | TC-ERR    |
+| [rules.md](rules.md)                 | 심사 규칙 엔진 (판정·근거)                             | TC-RULE   |
+| [evaluation.md](evaluation.md)       | 평가 API, 기준표 버전 선택, 평가 기록                  | TC-EVAL   |
+| [auth.md](auth.md)                   | 운영자 로그인·토큰, 서비스 토큰·역할                   | TC-AUTH   |
+| [criteria.md](criteria.md)           | 심사 기준 변경·조회, 평가 기록 목록                    | TC-CRIT   |
+| [observability.md](observability.md) | 관측: 요청 span의 `hfm.trace_id`, OTel 에이전트 이미지 | TC-OBS    |
 
 ## ID 규칙
 
