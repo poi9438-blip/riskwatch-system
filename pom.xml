@@ -20,6 +20,7 @@
 
     <properties>
         <java.version>17</java.version>
+        <jjwt.version>0.12.3</jjwt.version>
         <!-- 테스트용 MySQL 컨테이너 라이브러리 버전 (HomeFin·FinFlow와 같음) -->
         <testcontainers.version>2.0.5</testcontainers.version>
     </properties>
@@ -44,6 +45,25 @@
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-security</artifactId>
+        </dependency>
+
+        <!-- JWT 생성/검증 (운영자 토큰, 4단계부터 서비스 토큰, HomeFin·FinFlow와 같은 버전) -->
+        <dependency>
+            <groupId>io.jsonwebtoken</groupId>
+            <artifactId>jjwt-api</artifactId>
+            <version>${jjwt.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>io.jsonwebtoken</groupId>
+            <artifactId>jjwt-impl</artifactId>
+            <version>${jjwt.version}</version>
+            <scope>runtime</scope>
+        </dependency>
+        <dependency>
+            <groupId>io.jsonwebtoken</groupId>
+            <artifactId>jjwt-jackson</artifactId>
+            <version>${jjwt.version}</version>
+            <scope>runtime</scope>
         </dependency>
 
         <!-- JPA(Hibernate)와 Spring Data JPA -->

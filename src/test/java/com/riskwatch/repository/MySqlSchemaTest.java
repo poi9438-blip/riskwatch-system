@@ -47,11 +47,11 @@ class MySqlSchemaTest {
     EvaluationService evaluationService;
 
     @Test
-    @DisplayName("[TC-EVAL-207] 실제 MySQL 8에서 Flyway V1·V2, 엔티티 확인 통과, 기준값→버전 외래키, (버전·상품·키) unique, 평가→기준 버전 외래키, 평가 저장")
+    @DisplayName("[TC-EVAL-207] 실제 MySQL 8에서 Flyway V1~V3(V3 운영자 표), 엔티티 확인 통과, 기준값→버전 외래키, (버전·상품·키) unique, 평가→기준 버전 외래키, 평가 저장")
     void schemaWorksOnMySql() {
         List<String> versions = jdbc.queryForList(
                 "select version from flyway_schema_history where success = 1 order by installed_rank", String.class);
-        assertThat(versions).containsExactly("1", "2");
+        assertThat(versions).containsExactly("1", "2", "3");
         assertThat(jdbc.queryForObject("select count(*) from criteria_values", Long.class)).isEqualTo(32);
 
         Long versionId = jdbc.queryForObject("select id from criteria_versions where version = ?", Long.class,
