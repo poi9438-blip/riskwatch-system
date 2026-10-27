@@ -7,6 +7,8 @@
 | ------------------------------ | ------------------------------------------ | --------- |
 | [base.md](base.md)             | 뼈대: 보안 기본값, traceId, actuator, 시각 | TC-BASE   |
 | [api-errors.md](api-errors.md) | 공통 응답·오류 형식                        | TC-ERR    |
+| [rules.md](rules.md)           | 심사 규칙 엔진 (판정·근거)                 | TC-RULE   |
+| [evaluation.md](evaluation.md) | 기준표 버전 선택, 평가 기록                | TC-EVAL   |
 
 ## ID 규칙
 
