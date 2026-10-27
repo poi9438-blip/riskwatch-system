@@ -20,6 +20,8 @@
 
     <properties>
         <java.version>17</java.version>
+        <!-- 테스트용 MySQL 컨테이너 라이브러리 버전 (HomeFin·FinFlow와 같음) -->
+        <testcontainers.version>2.0.5</testcontainers.version>
     </properties>
 
     <!--
@@ -96,6 +98,18 @@
         <dependency>
             <groupId>com.h2database</groupId>
             <artifactId>h2</artifactId>
+            <scope>test</scope>
+        </dependency>
+
+        <!-- 테스트에서 실제 MySQL 8.0 컨테이너 사용 (H2로 확인할 수 없는 스키마 검증·MySQL 전용 SQL) -->
+        <dependency>
+            <groupId>org.testcontainers</groupId>
+            <artifactId>testcontainers-mysql</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.testcontainers</groupId>
+            <artifactId>testcontainers-junit-jupiter</artifactId>
             <scope>test</scope>
         </dependency>
     </dependencies>

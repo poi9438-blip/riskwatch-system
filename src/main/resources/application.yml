@@ -31,6 +31,11 @@ server:
   # RiskWatch 포트 8120 (HomeFin 8100, RiskWatch 8120)
   port: ${SERVER_PORT:8120}
 
+app:
+  encryption:
+    # 평가 입력의 연소득·DTI 암호화 키 (정확히 32바이트, 기본값 없음)
+    key: ${ENCRYPTION_KEY}
+
 management:
   endpoints:
     web:

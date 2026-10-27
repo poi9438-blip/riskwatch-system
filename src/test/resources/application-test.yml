@@ -15,3 +15,8 @@ spring:
     hibernate:
       # 운영과 같이 Flyway가 테이블을 만듦
       ddl-auto: none
+
+# 테스트 전용 비밀값 (실제 값 아님)
+app:
+  encryption:
+    key: RiskWatch-AES-256-Key-Test-Pad!!
