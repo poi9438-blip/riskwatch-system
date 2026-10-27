@@ -20,12 +20,13 @@
 
 ## 진행 단계
 
-| 단계 | 내용                                                                     | 상태                                            |
-| ---- | ------------------------------------------------------------------------ | ----------------------------------------------- |
-| 1    | 뼈대: 공통 응답·오류 형식, traceId, 보안 기본값, compose, CI + 업무 명세 | 완료                                            |
-| 2    | 심사 규칙 엔진 + DB 기준표(첫 기준 버전) + 평가 기록                     | 완료                                            |
-| 3    | 운영자 계정, 심사 기준 변경 API(새 버전, 이력)                           | 완료                                            |
-| 4    | 평가 API(서비스 토큰) + HomeFin·FinFlow 연결                             | 진행 중 (평가 API 완료, 연결은 FinFlow·HomeFin) |
+| 단계 | 내용                                                                     | 상태 |
+| ---- | ------------------------------------------------------------------------ | ---- |
+| 1    | 뼈대: 공통 응답·오류 형식, traceId, 보안 기본값, compose, CI + 업무 명세 | 완료 |
+| 2    | 심사 규칙 엔진 + DB 기준표(첫 기준 버전) + 평가 기록                     | 완료 |
+| 3    | 운영자 계정, 심사 기준 변경 API(새 버전, 이력)                           | 완료 |
+| 4    | 평가 API(서비스 토큰) + HomeFin·FinFlow 연결                             | 완료 |
+| 5    | 관측: 요청 span에 업무 traceId(`hfm.trace_id`), OTel 에이전트 이미지     | 완료 |
 
 ## 실행
 
@@ -53,6 +54,18 @@ curl http://localhost:8120/actuator/health   # {"status":"UP"}
 ./mvnw test                   # Windows: mvnw.cmd test
 python scripts/tc_status.py   # 테스트 명세와 결과 대조
 ```
+
+### 3. 관측 (선택)
+
+기본 이미지에는 관측 도구가 없습니다. Dockerfile의 `otel` 빌드 단계에 OpenTelemetry Java 에이전트(2.33.0, 체크섬 확인)가 들어 있고, HomeFin 저장소의 관측 compose가 이 단계를 씁니다.
+
+```bash
+# homefin-mate 폴더에서 (세 저장소를 나란히 받아 둔 상태)
+docker compose -f docker-compose.yml -f full/docker-compose.full.yml -f observability/docker-compose.observability.yml -f observability/docker-compose.observability.full.yml up -d --build
+```
+
+- Grafana(http://localhost:3000) → Tempo에서 `{span.hfm.trace_id="…"}`로 찾으면 RiskWatch span이 HomeFin·FinFlow span과 한 추적으로 보입니다. 속성 이름은 세 서비스가 같습니다.
+- Loki에서 `{service_name="riskwatch"} | traceId="…"`로 같은 번호의 로그를 찾습니다.
 
 ## 문서
 
