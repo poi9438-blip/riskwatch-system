@@ -160,8 +160,8 @@ public class RuleEngine {
                 .collect(Collectors.joining(", "));
     }
 
-    // 입력이 없어 판정하지 않는 기준 (업무 명세 10장)
-    private static List<String> notEvaluated(ProductCode product) {
+    // 입력이 없어 판정하지 않는 기준 (업무 명세 10장, 상품마다 정해져 있어 평가 조회 때도 같은 목록)
+    public static List<String> notEvaluated(ProductCode product) {
         List<String> list = new ArrayList<>(List.of("신용점수", "순자산", "전용면적", "규제지역 LTV·DTI 차감"));
         if (product == ProductCode.BOGEUMJARI) {
             list.add("아파트 외 주택 LTV");
