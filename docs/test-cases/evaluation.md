@@ -14,4 +14,4 @@
 | TC-EVAL-204 | 예외 | 적용 중인 기준 버전이 없음                                                | 평가 거부, 평가 기록 없음                                                                                    | P1   | EvaluationServiceTest |      |
 | TC-EVAL-205 | 정상 | Flyway 첫 기준 버전 `2026-10-26`의 값                                     | 명세 5장 표와 같음 (상품 3개 × 기준 키, 만든 사람 `system`, 사유 있음)                                       | P0   | EvaluationServiceTest |      |
 | TC-EVAL-206 | 정상 | 저장한 근거 JSON을 다시 읽음                                              | 평가 때 돌려준 근거와 같음 (규칙 코드·기준값·실제값·결과·설명)                                               | P1   | EvaluationServiceTest |      |
-| TC-EVAL-207 | 정상 | 실제 MySQL 8 (Testcontainers)에서 Flyway V1·V2                            | 엔티티 확인(validate) 통과, 기준값 → 버전 외래키, (버전, 상품, 기준 키) unique, 평가 → 기준 버전 외래키      | P1   | MySqlSchemaTest       | O2   |
+| TC-EVAL-207 | 정상 | 실제 MySQL 8 (Testcontainers)에서 Flyway V1~V3 (V3 운영자 표)             | 엔티티 확인(validate) 통과, 기준값 → 버전 외래키, (버전, 상품, 기준 키) unique, 평가 → 기준 버전 외래키      | P1   | MySqlSchemaTest       | O2   |

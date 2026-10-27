@@ -18,5 +18,10 @@ spring:
 
 # 테스트 전용 비밀값 (실제 값 아님)
 app:
+  operator:
+    jwt-secret: RiskWatch-Test-Operator-JWT-Secret-32bytes-or-more
+    token-expiration-ms: 3600000
+    initial-email: operator@test.local
+    initial-password: Operator-Test-Pass!1
   encryption:
     key: RiskWatch-AES-256-Key-Test-Pad!!
