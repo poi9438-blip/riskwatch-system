@@ -27,26 +27,29 @@ RiskWatch가 **무엇을 판정하고, 누가 무엇을 할 수 있는지** 정�
 
 - 서비스 토큰은 FinFlow와 같은 방식입니다: HS256, `aud=riskwatch`, 유효 기간 5분 이하. **호출하는 서버마다 비밀키가 다릅니다.** 한 서버의 비밀키가 새어도 다른 서버인 척할 수 없고, 평가 기록에 어느 서버가 요청했는지(`sourceSystem`)를 토큰으로 정합니다(요청 본문 값을 믿지 않음).
 - 운영자 계정·로그인·시도 제한은 FinFlow와 같습니다(BCrypt, `.env`로 첫 계정, 15분 5번 실패 시 429).
-- 역할이 섞이면 403입니다.
+- 역할이 섞이면 403입니다 (서비스 토큰으로 운영자 API, 운영자 토큰으로 평가 요청).
+- **세 비밀키(`HOMEFIN_TOKEN_SECRET`, `FINFLOW_TOKEN_SECRET`, `OPERATOR_JWT_SECRET`)는 모두 달라야 하고 32바이트 이상**이어야 합니다. 아니면 서버가 시작하지 않습니다(메시지에 키 값 없음).
 
 ## 3. 평가 입력 (`POST /api/evaluations`)
 
-| 항목                                                         | 필수   | 규칙                                                                  |
-| ------------------------------------------------------------ | ------ | --------------------------------------------------------------------- |
-| `productCode`                                                | 예     | `DIDIMDOL` / `NEWBORN_DIDIMDOL` / `BOGEUMJARI`                        |
-| `applicantRef`                                               | 예     | `homefin:` + 숫자                                                     |
-| `sourceRef`                                                  | 아니요 | 요청한 쪽의 참조 (FinFlow 신청 번호, HomeFin 계산 기록 id), 64자 이하 |
-| `requestedAmount`                                            | 예     | 원 단위 정수, 1 이상 10억 이하                                        |
-| `termMonths`                                                 | 예     | 12 이상 600 이하                                                      |
-| `housePrice`                                                 | 예     | 원 단위 정수, 1 이상                                                  |
-| `householdAnnualIncome`                                      | 예     | 원 단위 정수, 0 이상 (부부합산)                                       |
-| `dti`                                                        | 예     | 0 이상 9.9999 이하, 소수 넷째 자리                                    |
-| `houseOwnership`                                             | 예     | `NONE`(무주택) / `RENT`(무주택·전월세) / `OWN`(주택 보유)             |
-| `firstHome`, `newlywed`, `newbornWithin2Years`, `dualIncome` | 예     | true / false                                                          |
-| `childCount`                                                 | 예     | 0 이상 20 이하 (미성년 자녀)                                          |
-| `region`                                                     | 아니요 | 시·도 이름 (수도권 `서울`·`인천`·`경기`면 생애최초 LTV 우대 없음)     |
+| 항목                                                         | 필수   | 규칙                                                                         |
+| ------------------------------------------------------------ | ------ | ---------------------------------------------------------------------------- |
+| `productCode`                                                | 예     | `DIDIMDOL` / `NEWBORN_DIDIMDOL` / `BOGEUMJARI`                               |
+| `applicantRef`                                               | 예     | `homefin:` + 숫자                                                            |
+| `sourceRef`                                                  | 아니요 | 요청한 쪽의 참조 (FinFlow 신청 번호, HomeFin 계산 기록 id), 64자 이하        |
+| `requestedAmount`                                            | 예     | 원 단위 정수, 1 이상 10억 이하                                               |
+| `termMonths`                                                 | 예     | 12 이상 600 이하                                                             |
+| `housePrice`                                                 | 예     | 원 단위 정수, 1 이상                                                         |
+| `householdAnnualIncome`                                      | 예     | 원 단위 정수, 0 이상 (부부합산)                                              |
+| `dti`                                                        | 예     | 0 이상 9.9999 이하, 소수 넷째 자리                                           |
+| `houseOwnership`                                             | 예     | `NONE`(무주택) / `RENT`(무주택·전월세) / `OWN`(주택 보유)                    |
+| `firstHome`, `newlywed`, `newbornWithin2Years`, `dualIncome` | 예     | true / false                                                                 |
+| `childCount`                                                 | 예     | 0 이상 20 이하 (미성년 자녀)                                                 |
+| `region`                                                     | 아니요 | 시·도 이름, 20자 이하 (수도권 `서울`·`인천`·`경기`면 생애최초 LTV 우대 없음) |
 
 - 모든 판정 입력은 **필수**입니다. 값이 없으면 판정하지 않고 400입니다(HomeFin 추천처럼 "확인 필요"로 넘어가지 않음).
+- 형식 오류는 400 `필드: 메시지`(메시지는 영어). 없는 상품·주택 보유 값, **정수 칸(금액·기간·자녀 수)의 소수**, 깨진 JSON은 400 `Malformed request body`입니다. 소수를 잘라 판정하지 않습니다.
+- 본문에 `sourceSystem`을 넣어도 쓰지 않습니다(토큰으로 정함).
 
 ## 4. 심사 규칙
 
@@ -114,16 +117,16 @@ RiskWatch가 **무엇을 판정하고, 누가 무엇을 할 수 있는지** 정�
 
 모든 응답은 공통 형식 `{status, message, data, traceId}`입니다. 시각은 시간대를 붙여 보냅니다(`…Z`).
 
-| 메서드 | 경로                                                       | 주체                           | 내용                                                                                                                         | 단계 |
-| ------ | ---------------------------------------------------------- | ------------------------------ | ---------------------------------------------------------------------------------------------------------------------------- | ---- |
-| POST   | `/api/evaluations`                                         | SERVICE                        | 평가 → `{evaluationId, verdict, riskLevel, riskScore, recommendation, criteriaVersion, reasons[]}`                           | 4    |
-| GET    | `/api/evaluations/{evaluationId}`                          | SERVICE(요청한 서버만) / ADMIN | 평가 기록 조회 (다른 서버의 평가는 404)                                                                                      | 4    |
-| POST   | `/api/auth/login`                                          | 누구나                         | 운영자 로그인                                                                                                                | 3    |
-| GET    | `/api/admin/criteria`                                      | ADMIN                          | 지금 적용 중인 기준 버전과 값                                                                                                | 3    |
-| GET    | `/api/admin/criteria/versions`                             | ADMIN                          | 기준 버전 목록 (최신순, 만든 사람·사유·적용 시각)                                                                            | 3    |
-| GET    | `/api/admin/criteria/versions/{version}`                   | ADMIN                          | 한 버전의 값 전체와 이전 버전 대비 바뀐 값                                                                                   | 3    |
-| POST   | `/api/admin/criteria/versions`                             | ADMIN                          | 새 버전 만들기 `{version, effectiveFrom?, reason, changes[{productCode, key, value}]}` (바꾸지 않은 값은 지금 버전에서 복사) | 3    |
-| GET    | `/api/admin/evaluations?productCode=&verdict=&page=&size=` | ADMIN                          | 평가 기록 목록                                                                                                               | 3    |
+| 메서드 | 경로                                                       | 주체                           | 내용                                                                                                                                                                                  | 단계 |
+| ------ | ---------------------------------------------------------- | ------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---- |
+| POST   | `/api/evaluations`                                         | SERVICE                        | 평가 → 201 `{evaluationId, sourceSystem, sourceRef, applicantRef, productCode, verdict, riskLevel, riskScore, recommendation, criteriaVersion, reasons[], notEvaluated[], createdAt}` | 4    |
+| GET    | `/api/evaluations/{evaluationId}`                          | SERVICE(요청한 서버만) / ADMIN | 평가 기록 조회, 평가 응답과 같은 모양 (다른 서버의 평가는 없는 평가와 같은 404). 입력값은 근거의 실제값으로만 보임                                                                    | 4    |
+| POST   | `/api/auth/login`                                          | 누구나                         | 운영자 로그인                                                                                                                                                                         | 3    |
+| GET    | `/api/admin/criteria`                                      | ADMIN                          | 지금 적용 중인 기준 버전과 값                                                                                                                                                         | 3    |
+| GET    | `/api/admin/criteria/versions`                             | ADMIN                          | 기준 버전 목록 (최신순, 만든 사람·사유·적용 시각)                                                                                                                                     | 3    |
+| GET    | `/api/admin/criteria/versions/{version}`                   | ADMIN                          | 한 버전의 값 전체와 이전 버전 대비 바뀐 값                                                                                                                                            | 3    |
+| POST   | `/api/admin/criteria/versions`                             | ADMIN                          | 새 버전 만들기 `{version, effectiveFrom?, reason, changes[{productCode, key, value}]}` (바꾸지 않은 값은 지금 버전에서 복사)                                                          | 3    |
+| GET    | `/api/admin/evaluations?productCode=&verdict=&page=&size=` | ADMIN                          | 평가 기록 목록                                                                                                                                                                        | 3    |
 
 - `/actuator/health`만 인증 없이 공개합니다.
 
@@ -156,21 +159,21 @@ RiskWatch가 **무엇을 판정하고, 누가 무엇을 할 수 있는지** 정�
 
 ## 11. 오류 응답
 
-| 상태 | 언제                                                                                  |
-| ---- | ------------------------------------------------------------------------------------- |
-| 400  | 입력 형식, 기준 변경 값 형식(범위 밖, 없는 키·상품, 지금 값과 같음), 적용 시각이 과거 |
-| 401  | 토큰 없음·만료·서명 오류, 발급자·대상 불일치, 로그인 실패                             |
-| 403  | 역할이 맞지 않음                                                                      |
-| 404  | 없는 평가·버전, 다른 서버가 요청한 평가                                               |
-| 409  | 이미 있는 버전 이름, 예약된 버전이 있는데 새 버전                                     |
-| 429  | 운영자 로그인 시도 제한                                                               |
-| 500  | 예상 못 한 오류, 적용할 기준 버전이 없음 (일반 메시지만, 원인은 서버 로그)            |
+| 상태 | 언제                                                                                                                           |
+| ---- | ------------------------------------------------------------------------------------------------------------------------------ |
+| 400  | 입력 형식(필수 입력 없음, 범위 밖, 정수 칸의 소수), 기준 변경 값 형식(범위 밖, 없는 키·상품, 지금 값과 같음), 적용 시각이 과거 |
+| 401  | 토큰 없음·만료·서명 오류, 발급자·대상 불일치, 로그인 실패                                                                      |
+| 403  | 역할이 맞지 않음                                                                                                               |
+| 404  | 없는 평가·버전, 다른 서버가 요청한 평가                                                                                        |
+| 409  | 이미 있는 버전 이름, 예약된 버전이 있는데 새 버전                                                                              |
+| 429  | 운영자 로그인 시도 제한                                                                                                        |
+| 500  | 예상 못 한 오류, 적용할 기준 버전이 없음 (일반 메시지만, 원인은 서버 로그)                                                     |
 
 ## 12. 단계별 범위
 
-| 단계 | 이 문서의 범위                                              | 테스트 명세                                                                |
-| ---- | ----------------------------------------------------------- | -------------------------------------------------------------------------- |
-| 1    | 뼈대 (공통 응답·오류, traceId, 보안 기본값)                 | [base.md](test-cases/base.md), [api-errors.md](test-cases/api-errors.md)   |
-| 2    | 4장 규칙, 5장 기준표(첫 버전), 6장 평가 기록, 9장 표 (완료) | [rules.md](test-cases/rules.md), [evaluation.md](test-cases/evaluation.md) |
-| 3    | 2장 운영자, 5장 기준 변경, 7장 운영자 API                   | [auth.md](test-cases/auth.md), [criteria.md](test-cases/criteria.md)       |
-| 4    | 2장 서비스 토큰, 7장 평가 API, 8장 연결                     | 4단계 전에 작성                                                            |
+| 단계 | 이 문서의 범위                                                                                   | 테스트 명세                                                                                                  |
+| ---- | ------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------ |
+| 1    | 뼈대 (공통 응답·오류, traceId, 보안 기본값)                                                      | [base.md](test-cases/base.md), [api-errors.md](test-cases/api-errors.md)                                     |
+| 2    | 4장 규칙, 5장 기준표(첫 버전), 6장 평가 기록, 9장 표 (완료)                                      | [rules.md](test-cases/rules.md), [evaluation.md](test-cases/evaluation.md)                                   |
+| 3    | 2장 운영자, 5장 기준 변경, 7장 운영자 API (완료)                                                 | [auth.md](test-cases/auth.md), [criteria.md](test-cases/criteria.md)                                         |
+| 4    | 2장 서비스 토큰, 3장 평가 입력, 7장 평가 API (이 저장소 완료), 8장 연결 (FinFlow·HomeFin 저장소) | [auth.md](test-cases/auth.md) TC-AUTH-106~109·203, [evaluation.md](test-cases/evaluation.md) TC-EVAL-101~107 |
