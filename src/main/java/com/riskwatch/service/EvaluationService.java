@@ -9,6 +9,7 @@ import com.riskwatch.domain.SourceSystem;
 import com.riskwatch.dto.evaluation.EvaluationRequest;
 import com.riskwatch.dto.evaluation.EvaluationView;
 import com.riskwatch.entity.RiskEvaluation;
+import com.riskwatch.metrics.EvaluationMetrics;
 import com.riskwatch.repository.CriteriaVersionRepository;
 import com.riskwatch.repository.RiskEvaluationRepository;
 import com.riskwatch.rule.EvaluationInput;
@@ -41,6 +42,7 @@ public class EvaluationService {
     private final RiskEvaluationRepository evaluationRepository;
     private final CriteriaVersionRepository versionRepository;
     private final ObjectMapper objectMapper;
+    private final EvaluationMetrics metrics;
 
     private static final TypeReference<List<RuleReason>> REASONS = new TypeReference<>() {
     };
@@ -56,6 +58,8 @@ public class EvaluationService {
         EvaluationInput input = request.toInput();
         Result result = evaluate(input, caller.sourceSystem());
         EvaluationOutcome outcome = result.outcome();
+        // 평가 API로 저장된 평가만 셈 (시작 준비는 아래 evaluate를 직접 부르고 롤백하므로 세지 않음)
+        metrics.evaluated(caller.sourceSystem(), input.productCode(), outcome.verdict());
         return new EvaluationView(result.evaluationId(), caller.sourceSystem(), input.sourceRef(),
                 input.applicantRef(), input.productCode(), outcome.verdict(), outcome.riskLevel(),
                 outcome.riskScore(), outcome.recommendation(), result.criteriaVersion(), outcome.reasons(),
