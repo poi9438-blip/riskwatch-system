@@ -27,6 +27,7 @@
 | 3    | 운영자 계정, 심사 기준 변경 API(새 버전, 이력)                           | 완료 |
 | 4    | 평가 API(서비스 토큰) + HomeFin·FinFlow 연결                             | 완료 |
 | 5    | 관측: 요청 span에 업무 traceId(`hfm.trace_id`), OTel 에이전트 이미지     | 완료 |
+| 6    | 업무 지표: 평가 API 평가 수(요청 서버·상품·판정별)                       | 완료 |
 
 ## 실행
 
@@ -66,6 +67,7 @@ docker compose -f docker-compose.yml -f full/docker-compose.full.yml -f observab
 
 - Grafana(http://localhost:3000) → Tempo에서 `{span.hfm.trace_id="…"}`로 찾으면 RiskWatch span이 HomeFin·FinFlow span과 한 추적으로 보입니다. 속성 이름은 세 서비스가 같습니다.
 - Loki에서 `{service_name="riskwatch"} | traceId="…"`로 같은 번호의 로그를 찾습니다.
+- 업무 지표: `riskwatch_evaluations_total{source_system, product_code, verdict}`(커밋된 평가만, 시작 준비는 세지 않음). HomeFin 대시보드 "FinSight 서비스"가 씁니다.
 
 ## 문서
 
